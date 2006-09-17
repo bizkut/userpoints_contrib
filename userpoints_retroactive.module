@@ -1,0 +1,48 @@
+<?php
+// $Id: userpoints_retroactive.module,v 1.1 2006-09-17 03:10:04 kbahey Exp $
+
+// Based on a script by Miguel Figueiredo <elmig@debianpt.org>, 2006
+
+function userpoints_retroactive_help($section) {
+  switch ($section) {
+    case 'admin/modules#description':
+    case 'admin/settings/userpoints_retroactive':
+      $output = t('Calculate userpoints for nodes and comments created in the past');
+      break;
+  }
+  return $output;
+}
+
+function userpoints_retroactive_menu($may_cache) {
+  $items = array();
+
+  $items[] = array(
+    'path'     => 'userpoints_retroactive',
+    'callback' => 'userpoints_retroactive',
+    'title'    => t('userpoints retroactive'),
+    'access'   => user_access(USERPOINTS_PERM_ADMIN),
+    'type'     => MENU_NORMAL_ITEM);
+
+   return $items;
+}
+
+function userpoints_retroactive() {
+  userpoints_retroactive_nodes();
+  userpoints_retroactive_comments();
+}
+
+function userpoints_retroactive_nodes() {
+	/* update count with nodes */
+	$n_result = db_query("SELECT uid, COUNT(uid) AS val FROM {node} WHERE uid > 0 GROUP BY uid");
+	while($node = db_fetch_object($n_result)) {
+		db_query('UPDATE {userpoints} SET points = %d WHERE uid = %d', $node->val, $node->uid);
+	}
+
+function userpoints_retroactive_comments() {
+	/* update count with comments */
+	$c_result = db_query('SELECT uid, COUNT(uid) AS val FROM {comments} WHERE uid > 0 GROUP BY uid');
+	while($comment = db_fetch_object($c_result)) {
+		db_query('UPDATE {userpoints} SET points = points + %d WHERE uid = %d', $comment->val, $comment->uid);
+	}
+  drupal_set_message(t('User points updated with node and comment values'));
+}
