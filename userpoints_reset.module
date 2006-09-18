@@ -1,5 +1,5 @@
 <?php
-// $Id: userpoints_reset.module,v 1.1 2006-09-17 03:10:04 kbahey Exp $
+// $Id: userpoints_reset.module,v 1.2 2006-09-18 02:42:50 kbahey Exp $
 
 define(USERPOINTS_PERM_RESET, 'reset userpoints');
 
@@ -18,8 +18,8 @@ function userpoints_reset_menu($may_cache) {
 
   $items[] = array(
     'path'     => 'userpoints_reset',
-    'callback' => 'userpoints_reset_confirm',
-    'title'    => t('reset userpoints'),
+    'callback' => 'userpoints_reset_page',
+    'title'    => t('userpoints reset'),
     'access'   => user_access(USERPOINTS_PERM_RESET),
     'type'     => MENU_NORMAL_ITEM);
 
@@ -30,10 +30,10 @@ function userpoints_reset_perm() {
   return array (USERPOINTS_PERM_RESET);
 }
 
-function userpoints_reset_confirm() {
+function userpoints_reset_page() {
   $form['confirm'] = array(
     '#type' => 'textfield',
-    '#title' => t('Reset all userpoints. This is useful in certain situations such as monthly contests. Enter YES without quotes to reset'),
+    '#title' => t('Reset all userpoints. This is useful in certain situations such as monthly contests. Enter YES to reset'),
     '#size' => 3,
     '#maxlength' => 3,
     '#default_value' => t('NO'));
@@ -47,7 +47,12 @@ function userpoints_reset_confirm() {
 
 function userpoints_reset_submit($form_id, $edit) {
   if ($edit['confirm'] == t('YES')) {
-    db_query('DELETE FROM {userpoints}');
+    userpoints_reset_do();
     drupal_set_message(t('All userpoints have been reset!'));
+    drupal_goto();
   }
+}
+
+function userpoints_reset_do() {
+  db_query('DELETE FROM {userpoints}');
 }
