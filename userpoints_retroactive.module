@@ -1,5 +1,5 @@
 <?php
-// $Id: userpoints_retroactive.module,v 1.2 2006-09-18 02:42:50 kbahey Exp $
+// $Id: userpoints_retroactive.module,v 1.3 2006-09-18 03:05:14 kbahey Exp $
 
 // Based on a script by Miguel Figueiredo <elmig@debianpt.org>, 2006
 
@@ -65,16 +65,18 @@ function userpoints_retroactive_initalize() {
 }
 
 function userpoints_retroactive_nodes() {
-	$n_result = db_query("SELECT uid, COUNT(uid) AS val FROM {node} WHERE uid > 0 GROUP BY uid");
+	$n_result = db_query("SELECT uid, type, COUNT(uid) AS val FROM {node} WHERE uid > 0 GROUP BY uid, type");
 	while($node = db_fetch_object($n_result)) {
-		db_query('UPDATE {userpoints} SET points = %d WHERE uid = %d', $node->val, $node->uid);
+    $weight = variable_get(USERPOINTS_POST . $node->type, 0);
+		db_query('UPDATE {userpoints} SET points = points + %d WHERE uid = %d', ($node->val * $weight), $node->uid);
 	}
 }
 
 function userpoints_retroactive_comments() {
+  $weight = variable_get(USERPOINTS_POST_COMMENT, 0);
 	$c_result = db_query('SELECT uid, COUNT(uid) AS val FROM {comments} WHERE uid > 0 GROUP BY uid');
 	while($comment = db_fetch_object($c_result)) {
-		db_query('UPDATE {userpoints} SET points = points + %d WHERE uid = %d', $comment->val, $comment->uid);
+		db_query('UPDATE {userpoints} SET points = points + %d WHERE uid = %d', ($comment->val * $weight), $comment->uid);
 	}
 }
 
