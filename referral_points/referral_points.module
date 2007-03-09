@@ -1,0 +1,62 @@
+<?php
+
+// Author P. Lindstrom (ptalindstrom) http://www.liquidcms.ca/
+// Several modifications, and code cleanup by Khalid Baheyeldin http://2bis.com
+
+define('REFERRAL_POINTS',            'referral_points');
+define('REFERRAL_POINTS_MULTIPLIER', 'referral_points_multiplier');
+define('REFERRAL_POINTS_EVENT',      'referral_points');
+
+function referral_points_userpoints($op, $points = 0, $uid = 0, $event = null, $description = null) {
+  switch($op) {
+    case 'setting':
+      $form[REFERRAL_POINTS] = array(
+        '#type'        => 'fieldset',
+        '#collapsible' => TRUE,
+        '#collapsed'   => TRUE,
+        '#title'       => t('Referral points'),
+      );
+    
+      $form[REFERRAL_POINTS][REFERRAL_POINTS_MULTIPLIER] = array(
+        '#type'          => 'textfield',
+        '#title'         => t("Percentage multiplier for referral points (0 for none, or 1 to 100 of points gained/lost)"),
+        '#default_value' => variable_get(REFERRAL_POINTS_MULTIPLIER, 10),
+        '#size'          => 5,
+        '#maxlength'     => 5,
+        '#validate'      => array('referral_validate_multiplier' => array())
+        );
+
+      return $form;
+  
+    case 'points after':
+      // We ignore the hook firing from us multiplying
+      if ($event != REFERRAL_POINTS_EVENT)  {
+        // We do nothing if the user referral module is not installed
+        if (module_exists('referral')) {
+          $referral_multiplier = variable_get(REFERRAL_POINTS_MULTIPLIER, 10);
+          // If the multiplier is 0, then we do nothing
+          if ($referral_multiplier) {
+            // We get the user who referred this user.
+            $referral_uid = db_result(db_query("SELECT referral_uid FROM {referral} WHERE uid = %d", $uid));
+            // If no one referred this user, nothing happens.
+            if ($referral_uid) {
+              // multiply points award to member by the referral multiplier to determine points for referral
+              $ref_points = (int)($points * $referral_multiplier / 100);
+              // call user points again but set event to say points have been awarded - this avoids infinite loop
+              userpoints_userpointsapi('points', $ref_points, $referral_uid, REFERRAL_POINTS_EVENT, 'Shared points'); 
+            }
+          }
+        }
+      }
+      break;
+  }
+}
+
+function referral_validate_multiplier($form) {
+  if ($form['#value'] >= 0 && $form['#value'] <= 100) {
+    return;
+  }
+  else {
+    form_set_error('referral_points_multiplier', t('Percentage multiplier must be between 0 and 100'));
+  }
+}
