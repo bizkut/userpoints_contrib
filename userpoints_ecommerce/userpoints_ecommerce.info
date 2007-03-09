@@ -1,6 +1,6 @@
-; $Id: userpoints_ecommerce.info,v 1.1 2007-03-09 02:44:42 kbahey Exp $
+; $Id: userpoints_ecommerce.info,v 1.2 2007-03-09 02:50:22 kbahey Exp $
 name = Userpoints Ecommerce
 description = Interfaces userpoints with ecommerce, so users can get points for purchases, as well as use points as a payment method for checkout.
 package = Userpoints
-dependencies = userpoints
+dependencies = userpoints,store
 version = "$Name:  $"
