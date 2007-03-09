@@ -1,0 +1,189 @@
+<?php
+
+//$Id: userpoints_ecommerce.module,v 1.1 2007-03-09 02:44:42 kbahey Exp $
+
+// Copyright 2005-2007 Khalid Baheyeldin http://2bits.com
+
+define('USERPOINTS_EC_EARN',      'userpoints_ecommerce_earn');
+define('USERPOINTS_MIN_PURCHASE', 'userpoints_min_purchase');
+define('USERPOINTS_EC_PAYMENT',   'userpoints_ecommerce_payment');
+define('USERPOINTS_EC_SPEND',     'userpoints_ecommerce_spend');
+define('USERPOINTS_MIN_SPEND',    'userpoints_min_spend');
+
+function userpoints_ecommerce_help($section) {
+  switch ($section) {
+    case 'admin/modules#description':
+      $output = t('<strong>UP:</strong> Interfaces userpoints with ecommerce, so users can get points for purchases, as well as use points for checkout.');
+      break;
+  }
+  return $output;
+}
+
+function userpoints_ecommerce_userpoints($op, $points = 0, $uid = 0, $event = '') {
+  switch($op) {
+    case 'setting':
+      if (module_exist('cart') && module_exist('payment')) {
+        $group = 'ecommerce';
+        $form[$group] = array(
+          '#type' => 'fieldset',
+          '#collapsible' => TRUE,
+          '#collapsed' => TRUE,
+          '#title' => t('Ecommerce Options'),
+        );
+    
+        $form[$group][USERPOINTS_EC_EARN] = array(
+          '#type' => 'textfield',
+          '#title' => t('%Points awarded for buying (multiplied by price)', userpoints_translation()),
+          '#default_value' => variable_get(USERPOINTS_EC_EARN, 0),
+          '#size' => 5,
+          '#maxlength' => 5,
+        );
+    
+        $form[$group][USERPOINTS_MIN_PURCHASE] = array(
+          '#type' => 'textfield',
+          '#title' => t('Smallest purchase for which %points are awarded', userpoints_translation()),
+          '#default_value' => variable_get(USERPOINTS_MIN_PURCHASE, '0.00'),
+          '#size' => 5,
+          '#maxlength' => 5,
+        );
+    
+        $form[$group][USERPOINTS_EC_PAYMENT] = array(
+          '#type' => 'radios',
+          '#title' => t('Accept user %points as payment?', userpoints_translation()),
+          '#default_value' => variable_get(USERPOINTS_EC_PAYMENT, 0),
+          '#options' => array(t('Disable'), t('Enable')),
+        );
+    
+        $form[$group][USERPOINTS_EC_SPEND] = array(
+          '#type' => 'textfield',
+          '#title' => t('%Points used in payment (for every dollar)', userpoints_translation()),
+          '#default_value' => variable_get(USERPOINTS_EC_SPEND, 1),
+          '#size' => 5,
+          '#maxlength' => 5,
+        );
+        
+        $form[$group][USERPOINTS_MIN_SPEND] = array(
+          '#type' => 'textfield',
+          '#title' => t('Number of %points that must be spent per purchase', userpoints_translation()),
+          '#default_value' => variable_get(USERPOINTS_MIN_SPEND, 0),
+          '#size' => 5,
+          '#maxlength' => 5,
+        );
+      }
+      return $form;
+      break;
+  }
+}
+
+function userpoints_ecommerce_ecommerceapi($data, $op) {
+  switch($op) {
+    case 'on payment completion':
+      $multiplier = (int)variable_get(USERPOINTS_EC_EARN, 0);
+      $min = variable_get(USERPOINTS_MIN_PURCHASE, '0.00');
+      $txnid = $data['txnid'];
+      $total = 0;
+
+      $uid = $data['uid'];
+      $result = db_query('SELECT price, qty FROM {ec_transaction_product} WHERE txnid = %d', $txnid);
+      while ($item = db_fetch_array($result)) {
+        $total = $total + $item['price'] * $item['qty'];
+      }
+      if ($total < $min) {
+        $points = 0;
+      }
+      else {
+        $points = $multiplier * $total;
+      }
+      $payment_status = $data['payment_status'];
+
+      if ($payment_status == payment_get_status_id('completed')) {
+        // Payment completed
+        if ($uid) {
+          // User id from the transaction
+          if ($points) {
+            // 
+            if ($data['payment_method'] != 'userpoints') {
+              // We cannot use points to purchase points. It does not make sense!
+              userpoints_userpointsapi('points',$points, $uid, 'ec_earn');
+            }
+          }
+        }
+      }
+    break;
+  }
+}
+
+function userpoints_ecommerce_paymentapi(&$txn, $op, $arg = '') {
+  global $user;
+  $uid = $user->uid;
+
+  if (!variable_get(USERPOINTS_EC_PAYMENT, 0)) {
+    return;
+  }
+
+  $multiplier = (int)variable_get(USERPOINTS_EC_SPEND, 1);
+  $min = variable_get(USERPOINTS_MIN_SPEND, 0);
+
+  switch ($op) {
+    case 'display name':
+      return t('User %Points', userpoints_translation());
+
+    case 'on checkout':
+      $gross = store_transaction_calc_gross($txn);
+      $points = ($gross * $multiplier);
+
+      if ($points < $min) {
+        form_set_error('gross', t('You must spend at least %min %points', array_merge(array('%min' => $min),userpoints_translation())));
+      }
+
+      $balance = userpoints_get_current_points($uid);
+      if ($balance < $points) {
+        form_set_error('gross', t('You do not have enough %points for this purchase', userpoints_translation()));
+      }
+      drupal_set_message(t('This purchase will cost you %point_value %points', array_merge(array('%point_value' => $points), userpoints_translation())));
+      break;
+
+    case 'payment page':
+      $gross = $txn->gross;
+      $points = ($gross * $multiplier);
+
+      // Check the user's balance
+      $balance = userpoints_get_current_points($uid);
+      if ($balance >= $points) {
+
+        $txnid = $txn->txnid;
+        // Check if we have a transaction ID
+        if ($txnid) {
+          // User has sufficient balance
+          userpoints_userpointsapi('points',-$points, $uid, 'ec_spend');
+
+          // Check if we have shippable items
+          $has_shippable_item = false;
+          foreach($txn->items as $key => $value) {
+            if (product_is_shippable($key['nid'])) {
+              $has_shippable_item = TRUE;
+            }
+          }
+
+          // If there are no shippable items, then push workflow to completion
+          if (!$has_shippable_item) {
+            $txn->workflow = 6;
+          }
+
+          // Setup payment to completed
+          $txn->payment_status = payment_get_status_id('completed');
+
+          // Update the transaction
+          $result = store_transaction_save($txn);
+
+          if ($result) {
+            // Send an email notification
+            store_send_invoice_email($txnid);
+          }
+
+          drupal_set_message(t('Your purchase using %pointsvalue %points has been completed', array_merge(array('%pointsvalue' => $points), userpoints_translation())));
+        }
+      }
+      break;
+  }
+}

@@ -1,0 +1,6 @@
+; $Id: userpoints_nodelimit.info,v 1.1 2007-03-09 02:44:42 kbahey Exp $
+name = Userpoints Node Limit
+description = Enables a limit on node creation based on user points
+package = Userpoints
+dependencies = userpoints
+version = "$Name:  $"

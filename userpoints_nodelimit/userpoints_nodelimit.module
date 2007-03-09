@@ -1,0 +1,52 @@
+<?php
+
+// $Id: userpoints_nodelimit.module,v 1.1 2007-03-09 02:44:42 kbahey Exp $
+
+/**
+ * Enables a limit on node creation based on user's current user points.
+ * Can't create the node if the points for the node is negative and would 
+ * bring the user below 0 points.
+ * Borrows approach to halting node creation from the nodefamily module - thanks!
+ * @author Jesse Mortenson aka greenmachine of IDC WebDev - www.idcwebdev.com
+ */
+
+/**
+ * Implementation of hook_help().
+ */
+function userpoints_nodelimit_help($section) {
+  switch ($section) {
+    case 'admin/modules#description':
+      return '<strong>UP:</strong> '.t('Enables a limit on node creation based on user points');
+  }
+}
+
+/**
+ * Implementation of hook_form_alter().
+ */
+function userpoints_nodelimit_form_alter($form_id, &$form) { 
+  if (isset($form['type']) &&  $form['type']['#value'] .'_node_form' == $form_id) {
+    $node = $form['#node'];      
+    if (!$node->nid && !user_access('administer nodes') && userpoints_nodelimit_check($node->type) == FALSE) {
+      drupal_set_message(t("You don't have enough points to create more nodes of this type."), 'error');
+      $form = NULL;
+     }
+  }
+}
+
+/** 
+ * Check if user has sufficient points to create a node of a certain type
+ */
+function userpoints_nodelimit_check($nodetype) {
+  global $user;
+
+  $current_points = userpoints_get_current_points($user->uid);
+
+  $node_points = variable_get(USERPOINTS_POST . $nodetype, 0);
+
+  if (($current_points + $node_points) < 0) {
+    return FALSE;
+  }
+  else {
+    return TRUE;
+  }
+}
