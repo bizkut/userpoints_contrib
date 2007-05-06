@@ -1,0 +1,65 @@
+<?php
+
+//$Id: userpoints_invite.module,v 1.2 2007-05-06 23:52:09 kbahey Exp $
+
+// Copyright 2005-2007 Khalid Baheyeldin http://2bits.com
+
+define('USERPOINTS_INVITE_INVITE',       'userpoints_invite_invite');
+define('USERPOINTS_INVITE_REGISTER',     'userpoints_invite_register');
+
+function userpoints_basic_help($section) {
+  switch ($section) {
+    case 'admin/settings/userpoints_basic':
+      $output = t('<strong>UP:</strong> Some basic interfaces for userpoints, such as posting nodes, comments, ...etc.');
+      break;
+  }
+  return $output;
+}
+
+function userpoints_basic_userpoints($op, $points = 0, $uid = 0, $event = '') {
+  switch($op) {
+    case 'setting':
+      $group = 'basic';
+      $form[$group] = array(
+        '#type'        => 'fieldset',
+        '#collapsible' => TRUE,
+        '#collapsed'   => TRUE,
+        '#title'       => t('!Points for invite', userpoints_translation()),
+      );
+      
+      $form[$group][USERPOINTS_INVITE_INVITE] = array(
+        '#type'          => 'textfield',
+        '#title'         => t('!Points for inviting a user (requires the invite module)', userpoints_translation()),
+        '#default_value' => variable_get(USERPOINTS_INVITE_INVITE, 0),
+        '#size'          => 5,
+        '#maxlength'     => 5,
+      );
+    
+      $form[$group][USERPOINTS_INVITE_REGISTER] = array(
+        '#type'          => 'textfield',
+        '#title'         => t('!Points when invited user registers (requires the invite module)', userpoints_translation()),
+        '#default_value' => variable_get(USERPOINTS_INVITE_REGISTER, 0),
+        '#size'          => 5,
+        '#maxlength'     => 5,
+      );
+      return $form;
+      break;
+  }
+}
+
+function userpoints_invite($op, $args) {
+  switch($op) {
+    case 'invite':
+      $points = variable_get(USERPOINTS_INVITE_INVITE, 0);
+      break;
+    case 'cancel':
+      $points = -variable_get(USERPOINTS_INVITE_INVITE, 0);
+      break;
+    case 'escalate':
+      $points = variable_get(USERPOINTS_INVITE_REGISTER, 0);
+      $op = 'register';
+      break;
+  }
+  userpoints_userpointsapi('points', $points, $args['inviter']->uid, 'invite '.$op);
+}
+
