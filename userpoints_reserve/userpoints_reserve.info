@@ -1,0 +1,4 @@
+name = Userpoints Reserve
+description = Automatically set Ecommerce exchange rate based on a cash reserve.
+package = Userpoints
+dependencies = userpoints userpoints_ecommerce

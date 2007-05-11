@@ -1,0 +1,88 @@
+<?php
+
+/**
+ * @file
+ * Userpoints Reserve module for Drupal 5.x
+ * Automatically set Ecommerce exchange rate based on a cash reserve.
+ * @author Mike Smullin (http://www.mikesmullin.com)
+ * @license GNU General Public License (http://www.gnu.org/copyleft/gpl.html)
+ */
+
+define('USERPOINTS_RESERVE_CURRENCY', 'userpoints_reserve_currency');
+define('USERPOINTS_RESERVE_CURRENCY_DEFAULT', 0);
+
+/**
+ * Implementation of hook_userpoints().
+ */
+function userpoints_reserve_userpoints($op, $new_points = 0, $uid = 0, $event = '') {
+  switch($op) {
+    case 'setting':
+      // ideally this would be placed in system_settings_form_submit(),
+      // but the UserPoints API / Drupal do not provide any support for that
+      // from what I can see... so this is a hack.
+      extract(userpoints_reserve_stats());
+      variable_set(USERPOINTS_EC_SPEND, $exchange_rate);
+
+      $group = 'userpoints_reserve';
+      $form[$group] = array(
+        '#type' => 'fieldset',
+        '#title' => t('!Points Reserve', userpoints_translation()),
+        '#description' =>  t('Set the amount of currency held in reserve, which will automatically determine the !points used in payment based on how many !points have been awarded to users as a whole. (e.g. Currency in Reserve / All !Points = Exchange Rate).<br /><br />' .
+                            'Currently there are <strong>'. number_format($total_points_in_circulation) .'</strong> !points in circulation, backed by <strong>'. number_format($total_currency_in_reserve,2) .'</strong> currency in reserve. This means the exchange rate is now <strong>1:'. $exchange_rate .'</strong>.', userpoints_translation()),
+        '#collapsible' => TRUE,
+        '#collapsed' => TRUE,
+      );
+
+      $form[$group][USERPOINTS_RESERVE_CURRENCY] = array(
+        '#type' => 'textfield',
+        '#title' => t('Reserved Currency'),
+        '#default_value' => $total_currency_in_reserve,
+        '#description' => '(e.g. 1000 for One-Thousand U.S. Dollars, assuming currency is USD)',
+      );
+
+      return $form;
+      break;
+  }
+}
+
+/**
+ * Get Userpoints Reserve Statistics
+ *
+ * @return Array
+ *   "total_points_in_circulation"
+ *   "total_currency_in_reserve"
+ *   "exchange_rate"
+ */
+function userpoints_reserve_stats() {
+  $result = db_fetch_object(db_query("SELECT SUM(points) `total` FROM {userpoints};"));
+
+  return array(
+    'total_points_in_circulation' => $total_points_in_circulation = $result->total,
+    'total_currency_in_reserve' => $total_currency_in_reserve = variable_get(USERPOINTS_RESERVE_CURRENCY, USERPOINTS_RESERVE_CURRENCY_DEFAULT),
+    'exchange_rate' => $total_currency_in_reserve>0? $total_currency_in_reserve / $total_points_in_circulation : 0,
+  );
+}
+
+/**
+ * Implementation of hook_block().
+ */
+function userpoints_reserve_block($op = 'list', $delta = 0, $edit = array()) {
+  if ($op == 'list') {
+    $blocks = array(
+      'userpoints-reserve' => array('info' => t('!Points Market', userpoints_translation()))
+      );
+    return $blocks;
+  }
+  else if ($op == 'view') {
+    extract(userpoints_reserve_stats());
+
+    return array(
+      'subject' => t('!Points Market', userpoints_translation()),
+      'content' =>
+        t('<p><strong>Cash in Reserve:</strong> ' . number_format($total_currency_in_reserve, 2) . '<br />' .
+        '<p><strong>!Points in Circulation:</strong> ' . number_format($total_points_in_circulation) . '<br />' .
+        '<p><strong>Exchange Rate:</strong> 1:' . round($exchange_rate, 3) .'<br />' .
+        '</p>', userpoints_translation())
+    );
+  }
+}
