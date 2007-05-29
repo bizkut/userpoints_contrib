@@ -1,0 +1,101 @@
+<?php
+
+//$Id: userpoints_transaction_tools.module,v 1.1 2007-05-29 03:59:29 kbahey Exp $
+
+function userpoints_transaction_tools_help($section) {
+  switch ($section) {
+    case 'admin/settings/userpoints_transaction_tools':
+      $output = t('<strong>UP:</strong> Provides extra reporting on transactions.');
+      break;
+  }
+  return $output;
+}
+
+function userpoints_transaction_tools_menu($may_cache) {
+  $items = array();
+  if ($may_cache) {
+    $items[] = array(
+      'path' => 'userpoints/myuserpoints',
+      'title' => t('My') . ' ' . t('!Points', userpoints_translation()),
+      'callback' => 'userpoints_transaction_tools_my_userpoints',
+      'access' => user_access('use userpoints'),
+      'type' => MENU_NORMAL_ITEM
+    );
+  }
+
+  return $items;
+}
+
+function userpoints_transaction_tools_my_userpoints() {
+  $overall_total = 0;
+  $unapproved_total = 0;
+  $approved_total = 0;
+
+  // Look up user's total
+  global $user;
+  $result = db_query("SELECT points FROM {userpoints} WHERE uid = %d", $user->uid);
+  if (mysql_num_rows($result) > 0) {
+    $approved_total = mysql_result($result, 0, 0);
+    $result = db_query("SELECT SUM(points) FROM {userpoints_txn} WHERE uid = %d AND status = 1", $user->uid);
+    if (mysql_result($result, 0, 0)) {
+      $unapproved_total = mysql_result($result, 0, 0);
+    }
+    $overall_total = ($approved_total + $unapproved_total);
+  }
+
+  $header = array(
+    array('data' => t('!Points', userpoints_translation()), 'field' => 'points'),
+    array('data' => t('Approved?'), 'field' => 'status'),
+    array('data' => t('Date'), 'field' => 'time_stamp', 'sort' => 'desc'),
+    array('data' => t('Event'), 'field' => 'event'),
+    array('data' => t('Description'), 'field' => 'description'),
+  );
+  $sql  = "SELECT points, time_stamp, event, description, status FROM {userpoints_txn} WHERE uid = %d";
+  $sql .= tablesort_sql($header);
+  $result = pager_query($sql, 10, 0, NULL, $user->uid);
+  if (mysql_num_rows($result) > 0) {
+    while ($row = db_fetch_object($result)) {
+      if ($row->status == 0) {
+        $status = t('Approved');
+      }
+      else {
+        $status = t('Unapproved');
+      }
+      if ($row->description) {
+        $description = $row->description;
+      }
+      else {
+        $description = t('None');
+      }
+      $rows[] = array(
+          array('data' => $row->points, 'align' => 'center'),
+          array('data' => $status, 'align' => 'center'),
+          array('data' => format_date($row->time_stamp, 'small'), 'align' => 'center'),
+          array('data' => $row->event),
+          array('data' => $description),
+      );
+    }
+  }
+  else {
+    $rows[] = array(
+          array('data' => t('No !Points earned', userpoints_translation()), 'colspan' => 5, 'align' => 'center')
+    );
+  }
+
+  $args = array('overall_total' => $overall_total,
+    'unapproved_total' => $unapproved_total,
+    'approved_total' => $approved_total
+  );
+
+  return theme('userpoints_transaction_tools_my_userpoints', $args, $header, $rows);
+}
+
+function theme_userpoints_transaction_tools_my_userpoints($args, $header, $rows) {
+  $output  = theme('table', $header, $rows);
+  $output .= '<p><strong>' . t('Overall Total !Points', userpoints_translation()) . ':</strong> ' . $args['overall_total'] . '<br />';
+  $output .= '<strong>' . t('Unapproved !Points', userpoints_translation()) . ':</strong> ' . $args['unapproved_total'] . '</p>';
+  $output .= '<p><strong>' . t('Net !Points Balance', userpoints_translation()) . ':</strong> ' . $args['approved_total'] . '</p>';
+  $output .= theme('pager', NULL, 10, 0);
+
+  return $output;
+}
