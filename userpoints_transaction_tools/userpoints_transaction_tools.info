@@ -1,4 +1,4 @@
-; $Id: userpoints_transaction_tools.info,v 1.1 2007-05-29 03:59:29 kbahey Exp $
+; $Id: userpoints_transaction_tools.info,v 1.2 2007-06-16 21:49:42 kbahey Exp $
 name = Userpoints Transaction Tools
 description = Adds extra features to report on transactions
 package = Userpoints
