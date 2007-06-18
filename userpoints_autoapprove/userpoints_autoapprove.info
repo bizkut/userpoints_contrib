@@ -1,6 +1,5 @@
-; $Id: userpoints_autoapprove.info,v 1.1 2007-05-29 03:59:29 kbahey Exp $
+; $Id: userpoints_autoapprove.info,v 1.2 2007-06-18 22:54:06 dww Exp $
 name = Userpoints Autoapprove
 description = Automatically approves outstanding transactions after a chosen period
 package = Userpoints
 dependencies = userpoints
-version = "$Name:  $"

@@ -1,6 +1,5 @@
-; $Id: referral_points.info,v 1.1 2007-03-09 02:51:50 kbahey Exp $
+; $Id: referral_points.info,v 1.2 2007-06-18 22:54:06 dww Exp $
 name = Referral points
 description = Allows referrers to get bonus points percentage points for all user points awarded to their referrees.
 package = Userpoints
 dependencies = userpoints,referral
-version = "$Name:  $"
