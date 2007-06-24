@@ -1,0 +1,6 @@
+; $Id: userpoints_expire_every.info,v 1.1 2007-06-24 00:35:04 kbahey Exp $
+name = Periodic expiry
+description = Periodic expiry of userpoints for all users. Useful for contests.
+dependencies = userpoints
+package = Userpoints
+version = "$Name:  $"

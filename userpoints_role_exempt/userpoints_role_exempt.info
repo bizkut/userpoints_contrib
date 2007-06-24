@@ -1,0 +1,6 @@
+; $Id: userpoints_role_exempt.info,v 1.1 2007-06-24 00:35:05 kbahey Exp $
+name = Role exempt
+description = Exempts certain roles from earning userpoints. Useful for admin and moderators.
+dependencies = userpoints
+package = Userpoints
+version = "$Name:  $"

@@ -1,0 +1,6 @@
+; $Id: userpoints_role.info,v 1.1 2007-06-24 00:35:05 kbahey Exp $
+name = Role
+description = Users join/leave roles as they earn/lose certain points threshold.
+dependencies = userpoints
+package = Userpoints
+version = "$Name:  $"

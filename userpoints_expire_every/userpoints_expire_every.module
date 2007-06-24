@@ -1,0 +1,75 @@
+<?php
+
+//$Id: userpoints_expire_every.module,v 1.1 2007-06-24 00:35:04 kbahey Exp $
+
+// Copyright 2005-2007 Khalid Baheyeldin http://2bits.com
+
+// How often should we invoke hook_cron for this module? Default, once a day only
+define('USERPOINTS_EXPIRE_EVERY_FREQ',    86400);
+
+define('USERPOINTS_EXPIRE_EVERY_PERIOD', 'userpoints_expire_every_period');
+define('USERPOINTS_EXPIRE_EVERY_LAST',   'userpoints_expire_every_last');
+
+function userpoints_expire_every_help($section) {
+  switch ($section) {
+    case 'admin/modules#description':
+      $output = t('<strong>UP:</strong> At predefined intervals, all %points for all users are expired.', userpoints_translation());
+      break;
+  }
+  return $output;
+}
+
+function userpoints_expire_every_userpoints($op, $new_points = 0, $uid = 0, $event = '') {
+  switch($op) {
+    case 'setting':
+
+      $group = 'expire';
+      $form[$group] = array(
+        '#type' => 'fieldset',
+        '#title' => t('Points expiry'),
+        '#description' =>  t('At predefined intervals, all points for all users are expired. Useful for contests and the like. Cron must be run at least once a day.'),
+        '#collapsible' => TRUE,
+        '#collapsed' => TRUE,
+      );
+
+      $period = drupal_map_assoc(array(86400, 172800, 259200, 604800, 1209600, 2419200, 2592000, 5184000, 7776000), 'format_interval');
+
+      $form[$group][USERPOINTS_EXPIRE_PERIOD] = array(
+        '#type'          => 'select',
+        '#title'         => t('Period'),
+        '#default_value' => variable_get(USERPOINTS_EXPIRE_PERIOD, 0),
+        '#options'       => $period,
+        '#description'   => 'Period for point expiry.',
+        );
+
+      return $form;
+      break;
+  }
+}
+
+function userpoints_expire_every_cron() {
+  $now = time();
+  $last = variable_get(USERPOINTS_EXPIRE_EVERY_LAST, 0);
+
+  if (!$last) {
+    // First time we run this, we save the timestamp as the last time we did this
+    $last = $now;
+    variable_set(USERPOINTS_EXPIRE_EVERY_LAST, $last);
+  }
+
+  // Run only once a day, to decrease load on system
+  if (time() - variable_get('cron_last', 0) > USERPOINTS_EXPIRE_EVERY_FREQ) {
+	  $period = variable_get(USERPOINTS_EXPIRE_PERIOD, 0);
+
+    if ($now >= ($period + $last)) {
+      $result = db_query("SELECT uid FROM {userpoints}");
+      while($data = db_fetch_object($result)) {
+        userpoints_userpointsapi('points', 0, $data->uid, 'expire', "userpoints_expire_every: $period");
+      }
+
+      watchdog('userpoints', 'Userpoints expired for all users');
+      // Set the last time we reset the points
+      variable_set(USERPOINTS_EXPIRE_EVERY_LAST, $now);
+    }
+  }
+}
