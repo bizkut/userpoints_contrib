@@ -15,7 +15,7 @@ function userpoints_transaction_tools_menu($may_cache) {
   if (!$may_cache) {
     $items[] = array(
       'path' => 'userpoints/myuserpoints',
-      'title' => t('My') . ' ' . t('%Points', userpoints_translation()),
+      'title' => t('My') . ' ' . t('!Points', userpoints_translation()),
       'callback' => 'userpoints_transaction_tools_my_userpoints',
       'access' => user_access('use userpoints'),
       'type' => MENU_NORMAL_ITEM
@@ -23,7 +23,7 @@ function userpoints_transaction_tools_menu($may_cache) {
     $items[] = array(
           'path'     => 'userpoints',
 	  'callback' => 'userpoints_transaction_tools_list_users',
-	  'title'    => t('Users by %points', userpoints_translation()),
+	  'title'    => t('Users by !points', userpoints_translation()),
 	  'access'   => user_access(USERPOINTS_PERM_VIEW),
 	  'type'     => MENU_NORMAL_ITEM,
     );
@@ -39,7 +39,7 @@ function userpoints_transaction_tools_list_users(){
   $sql_cnt = "SELECT COUNT(DISTINCT(uid)) FROM {userpoints}";
   $header = array(
     array('data' => t('User'), 'field' => 'u.name'),
-    array('data' => t('%Points', userpoints_translation()), 'field' => 'p.points', 'sort' => 'desc'),
+    array('data' => t('!Points', userpoints_translation()), 'field' => 'p.points', 'sort' => 'desc'),
   );
   $sql .= tablesort_sql($header);
   $result = pager_query($sql, 30, 0, $sql_cnt);
@@ -68,7 +68,7 @@ function userpoints_transaction_tools_my_userpoints() {
   $uid = db_escape_string(arg(2));
   $point_user = user_load(array('uid'=> $uid));
   if ($point_user && user_access(USERPOINTS_PERM_VIEW)) { 
-     $title = t('%Points for ',userpoints_translation()). $point_user->name;
+     $title = t('!Points for ',userpoints_translation()). $point_user->name;
      drupal_set_title($title);
   } else {
      $uid = $user->uid;
@@ -86,7 +86,7 @@ function userpoints_transaction_tools_my_userpoints() {
   }
 
   $header = array(
-    array('data' => t('%Points', userpoints_translation()), 'field' => 'points'),
+    array('data' => t('!Points', userpoints_translation()), 'field' => 'points'),
     array('data' => t('Approved?'), 'field' => 'status'),
     array('data' => t('Date'), 'field' => 'time_stamp', 'sort' => 'desc'),
     array('data' => t('Event'), 'field' => 'event'),
@@ -120,7 +120,7 @@ function userpoints_transaction_tools_my_userpoints() {
   }
   else {
     $rows[] = array(
-          array('data' => t('No %Points earned', userpoints_translation()), 'colspan' => 5, 'align' => 'center')
+          array('data' => t('No !Points earned', userpoints_translation()), 'colspan' => 5, 'align' => 'center')
     );
   }
 
@@ -134,9 +134,9 @@ function userpoints_transaction_tools_my_userpoints() {
 
 function theme_userpoints_transaction_tools_my_userpoints($args, $header, $rows) {
   $output  = theme('table', $header, $rows);
-  $output .= '<p><strong>' . t('Overall Total %points', userpoints_translation()) . ':</strong> ' . $args['overall_total'] . '<br />';
-  $output .= '<strong>' . t('Unapproved %points', userpoints_translation()) . ':</strong> ' . $args['unapproved_total'] . '</p>';
-  $output .= '<p><strong>' . t('Net %points Balance', userpoints_translation()) . ':</strong> ' . $args['approved_total'] . '</p>';
+  $output .= '<p><strong>' . t('Overall Total !points', userpoints_translation()) . ':</strong> ' . $args['overall_total'] . '<br />';
+  $output .= '<strong>' . t('Unapproved !points', userpoints_translation()) . ':</strong> ' . $args['unapproved_total'] . '</p>';
+  $output .= '<p><strong>' . t('Net !points Balance', userpoints_translation()) . ':</strong> ' . $args['approved_total'] . '</p>';
   $output .= theme('pager', NULL, 10, 0);
 
   return $output;
