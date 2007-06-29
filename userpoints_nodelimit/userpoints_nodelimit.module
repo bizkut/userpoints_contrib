@@ -1,6 +1,6 @@
 <?php
 
-// $Id: userpoints_nodelimit.module,v 1.1 2007-03-09 02:44:42 kbahey Exp $
+// $Id: userpoints_nodelimit.module,v 1.2 2007-06-29 22:14:38 kbahey Exp $
 
 /**
  * Enables a limit on node creation based on user's current user points.

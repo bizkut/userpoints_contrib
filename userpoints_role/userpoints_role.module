@@ -1,6 +1,6 @@
 <?php
 
-//$Id: userpoints_role.module,v 1.1 2007-06-24 00:35:05 kbahey Exp $
+//$Id: userpoints_role.module,v 1.2 2007-06-29 22:14:38 kbahey Exp $
 
 // Copyright 2005-2007 Khalid Baheyeldin http://2bits.com
 
@@ -11,7 +11,7 @@ define('USERPOINTS_ROLE',             'userpoints_role_');
 function userpoints_role_help($section) {
   switch ($section) {
     case 'admin/modules#description':
-      $output = t('<strong>UP:</strong> Users gain/lose roles as they earn %points', userpoints_translation());
+      $output = t('<strong>UP:</strong> Users gain/lose roles as they earn !points', userpoints_translation());
       break;
   }
   return $output;
@@ -44,7 +44,7 @@ function userpoints_role_userpoints($op, $new_points = 0, $uid = 0, $event = '')
       $form[$group][USERPOINTS_EMAIL_ROLE_JOIN] = array(
         '#type' => 'textarea',
         '#title' => t('Text of email to sent upon joining a role'),
-        '#default_value' => variable_get(USERPOINTS_EMAIL_ROLE_JOIN, "%username,\n\nCongratulations!\nYou have met the minimum required points for joining a new role.\n\nAs a new member of this role, you now join a select few in having access to more areas and privileges on the web site.\n\nRole: %rolename\nPoints Required: %points\n\nWe extend our warmest welcome."),
+        '#default_value' => variable_get(USERPOINTS_EMAIL_ROLE_JOIN, "!username,\n\nCongratulations!\nYou have met the minimum required points for joining a new role.\n\nAs a new member of this role, you now join a select few in having access to more areas and privileges on the web site.\n\nRole: !rolename\nPoints Required: !points\n\nWe extend our warmest welcome."),
         '#width' => 70,
         '#lines' => 5,
         );
@@ -52,7 +52,7 @@ function userpoints_role_userpoints($op, $new_points = 0, $uid = 0, $event = '')
       $form[$group][USERPOINTS_EMAIL_ROLE_LEAVE] = array(
         '#type' => 'textarea',
         '#title' => t('Text of email to sent upon leaving a role'),
-        '#default_value' => variable_get(USERPOINTS_EMAIL_ROLE_LEAVE, "%username,\n\nWe are sorry!\nYou have lost the number of points required to stay in your current role.\n\nYou no longer have access to the areas and privileges of the following role:\n\nRole: %rolename\nPoints Required: %points."),
+        '#default_value' => variable_get(USERPOINTS_EMAIL_ROLE_LEAVE, "!username,\n\nWe are sorry!\nYou have lost the number of points required to stay in your current role.\n\nYou no longer have access to the areas and privileges of the following role:\n\nRole: !rolename\nPoints Required: !points."),
         '#width' => 70,
         '#lines' => 5,
         );
@@ -125,9 +125,9 @@ function _userpoints_role_leave($uid, $role_point) {
 function _userpoints_send_mail($op = 'join', $uid, $role_point) {
   $user = user_load(array('uid'=>$uid));
   $vars = array(
-    '%username' => $user->name,
-    '%rolename' => $role_point['name'],
-    '%points'   => $role_point['points']);
+    '!username' => $user->name,
+    '!rolename' => $role_point['name'],
+    '!points'   => $role_point['points']);
 
   switch($op) {
     case 'join':

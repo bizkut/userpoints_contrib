@@ -1,18 +1,18 @@
 <?php
-//$Id: userpoints_email.module,v 1.1 2007-06-24 00:35:04 kbahey Exp $
+//$Id: userpoints_email.module,v 1.2 2007-06-29 22:14:38 kbahey Exp $
 
 // Copyright 2007 Khalid Baheyeldin http://2bits.com
 
 define('USERPOINTS_EMAIL_TEXT',            'userpoints_email_text');
 define('USERPOINTS_EMAIL_SUBJECT',         'userpoints_email_subject');
 define('USERPOINTS_EMAIL_POINTS',          'userpoints_email_points');
-define('USERPOINTS_EMAIL_TEXT_DEFAULT',    "%username,\n\nCongratulations!\nYou now have %points.\n");
+define('USERPOINTS_EMAIL_TEXT_DEFAULT',    "!username,\n\nCongratulations!\nYou now have !points.\n");
 define('USERPOINTS_EMAIL_SUBJECT_DEFAULT', 'Congratulations');
 
 function userpoints_email_help($section) {
   switch ($section) {
     case 'admin/modules#description':
-      $output = t('<strong>UP:</strong> Email users once they earn a certain number of %points',
+      $output = t('<strong>UP:</strong> Email users once they earn a certain number of !points',
         userpoints_translation());
       break;
   }
@@ -49,7 +49,7 @@ function userpoints_email_userpoints($op, $new_points = 0, $uid = 0, $event = ''
         '#type' => 'textarea',
         '#title' => t('Text of email to sent.'),
         '#default_value' => variable_get(USERPOINTS_EMAIL_TEXT, USERPOINTS_EMAIL_TEXT_DEFAULT),
-        '#description' => t('Body of the email to send. %username and %points are replaced with values.'),
+        '#description' => t('Body of the email to send. !username and !points are replaced with values.'),
         '#width' => 70,
         '#lines' => 5,
       );
@@ -70,7 +70,6 @@ function userpoints_email_userpoints($op, $new_points = 0, $uid = 0, $event = ''
 function _userpoints_email_process($uid = 0, $current_points = 0, $new_points = 0) {
   $threshold  = variable_get(USERPOINTS_EMAIL_POINTS,  0);
   $subject = variable_get(USERPOINTS_EMAIL_SUBJECT, USERPOINTS_EMAIL_SUBJECT_DEFAULT);
-  $body    = variable_get(USERPOINTS_EMAIL_TEXT,    USERPOINTS_EMAIL_TEXT_DEFAULT);
 
   if ($threshold && $current_points >= $threshold) {
     $user = user_load(array('uid' => $uid));
@@ -78,6 +77,9 @@ function _userpoints_email_process($uid = 0, $current_points = 0, $new_points = 
     $from = variable_get('site_mail', ini_get('sendmail_from'));
     $headers = "From: $from\nReply-to: $from\nX-Mailer: Drupal\nReturn-path: $from\nErrors-to: $from";
 
-    drupal_mail('userpoints_email', $user->mail, $subject, t($body, array('%username' => $user->name, '%points' => $current_points)), $headers);
+    drupal_mail('userpoints_email',
+      $user->mail, $subject, t(variable_get(USERPOINTS_EMAIL_TEXT, USERPOINTS_EMAIL_TEXT_DEFAULT),
+      array('!username' => $user->name, '!points' => $current_points)),
+      $headers);
   }
 }

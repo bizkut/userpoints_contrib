@@ -27,8 +27,12 @@ function userpoints_reserve_userpoints($op, $new_points = 0, $uid = 0, $event = 
       $form[$group] = array(
         '#type' => 'fieldset',
         '#title' => t('!Points Reserve', userpoints_translation()),
-        '#description' =>  t('Set the amount of currency held in reserve, which will automatically determine the !points used in payment based on how many !points have been awarded to users as a whole. (e.g. Currency in Reserve / All !Points = Exchange Rate).<br /><br />' .
-                            'Currently there are <strong>'. number_format($total_points_in_circulation) .'</strong> !points in circulation, backed by <strong>'. number_format($total_currency_in_reserve,2) .'</strong> currency in reserve. This means the exchange rate is now <strong>1:'. $exchange_rate .'</strong>.', userpoints_translation()),
+        '#description' =>  t('Set the amount of currency held in reserve, which will automatically determine the !points used in payment based on how many !points have been awarded to users as a whole. (e.g. Currency in Reserve / All !Points = Exchange Rate).<br /><br />Currently there are <strong> !circulation </strong> !points in circulation, backed by <strong> !reserve  </strong> currency in reserve. This means the exchange rate is now <strong>1:!exchange</strong>', array_merge(
+          userpoints_translation(), array(
+          '!circulation' => number_format($total_points_in_circulation), 
+          '!reserve' => number_format($total_currency_in_reserve, 2),
+          '!exchange' => $exchange_rate,
+          ))),
         '#collapsible' => TRUE,
         '#collapsed' => TRUE,
       );
@@ -79,10 +83,14 @@ function userpoints_reserve_block($op = 'list', $delta = 0, $edit = array()) {
     return array(
       'subject' => t('!Points Market', userpoints_translation()),
       'content' =>
-        t('<p><strong>Cash in Reserve:</strong> ' . number_format($total_currency_in_reserve, 2) . '<br />' .
-        '<p><strong>!Points in Circulation:</strong> ' . number_format($total_points_in_circulation) . '<br />' .
-        '<p><strong>Exchange Rate:</strong> 1:' . round($exchange_rate, 3) .'<br />' .
-        '</p>', userpoints_translation())
+        t('<p><strong>Cash in Reserve:</strong> !reserve <br />
+        <p><strong>!Points in Circulation:</strong> !circulation <br />
+        <p><strong>Exchange Rate:</strong> 1:!exchange <br />',
+        array_merge(array(
+        '!reserve' => number_format($total_currency_in_reserve, 2),
+        '!circulation' => number_format($total_points_in_circulation),
+        '!exchange' => round($exchange_rate, 3),
+        ), userpoints_translation()))
     );
   }
 }
