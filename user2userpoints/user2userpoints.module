@@ -1,6 +1,6 @@
 <?php
 
-// $Id: user2userpoints.module,v 1.1 2007-07-02 14:39:39 kbahey Exp $
+// $Id: user2userpoints.module,v 1.2 2007-07-03 17:25:30 kbahey Exp $
 
 // By Joshua Rogers http://drupal.org/node/128446
 
@@ -32,14 +32,14 @@ function user2userpoints_menu($may_cache) {
       'path'               => 'user2userpoints',
       'title'              => t('Give !points', userpoints_translation()), 
       'callback'           => 'drupal_get_form',
-      'callback arguments' => array('user2userpoints_form'),
+      'callback arguments' => array('user2userpoints_giveform'),
       'access'             => array(USER2USERPOINTS_PERM_SEND),
     ); 
   } 
   return $items; 
 } 
 
-function user2userpoints_form($name = '') { 
+function user2userpoints_giveform($name = '') { 
   $form = array();
   $form['to'] = array(
        '#type'          => 'textfield',
@@ -63,7 +63,7 @@ function user2userpoints_form($name = '') {
   return $form;
 } 
 
-function user2userpoints_validate($form_id, $form_values) {
+function user2userpoints_giveform_validate($form_id, $form_values) {
   global $user;
 
   /* Check the name to be valid. */
@@ -88,7 +88,7 @@ function user2userpoints_validate($form_id, $form_values) {
   }
 }
 
-function user2userpoints_submit($form_id, $form_values) {
+function user2userpoints_giveform_submit($form_id, $form_values) {
   global $user;
 
   $points = $form_values['amount'];
