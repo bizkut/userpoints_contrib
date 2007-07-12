@@ -1,6 +1,6 @@
 <?php
 
-//$Id: userpoints_invite.module,v 1.6 2007-07-02 03:16:32 kbahey Exp $
+//$Id: userpoints_invite.module,v 1.7 2007-07-12 20:18:33 kbahey Exp $
 
 // Copyright 2005-2007 Khalid Baheyeldin http://2bits.com
 
@@ -91,7 +91,7 @@ function userpoints_invite_user($op, &$edit, &$account, $category = NULL) {
       if (variable_get(USERPOINTS_INVITE_REGISTER_REMOVE_ON_DELETE, 0) == 1) {
         $result = db_query("SELECT uid FROM {userpoints_txn} WHERE event = '%s' ORDER BY time_stamp DESC LIMIT 1", 'invite register invited '.$account->uid);
         if (db_num_rows($result) > 0) {
-          $uid = db_result($result, 0, 0);
+          $uid = db_result($result);
           $points = -(variable_get(USERPOINTS_INVITE_INVITE, 0) + variable_get(USERPOINTS_INVITE_REGISTER_INVITER, 0));
           userpoints_userpointsapi('points', $points, $uid, 'invited user '.$account->uid.' deleted');
         }

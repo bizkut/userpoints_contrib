@@ -76,11 +76,11 @@ function userpoints_transaction_tools_my_userpoints() {
 
   // Look up user's total
   $result = db_query("SELECT points FROM {userpoints} WHERE uid = %d", $uid);
-  if (mysql_num_rows($result) > 0) {
-    $approved_total = mysql_result($result, 0, 0);
+  if (db_num_rows($result) > 0) {
+    $approved_total = db_result($result);
     $result = db_query("SELECT SUM(points) FROM {userpoints_txn} WHERE uid = %d AND status = 1", $uid);
-    if (mysql_result($result, 0, 0)) {
-      $unapproved_total = mysql_result($result, 0, 0);
+    if (db_result($result)) {
+      $unapproved_total = db_result($result);
     }
     $overall_total = ($approved_total + $unapproved_total);
   }
@@ -95,7 +95,7 @@ function userpoints_transaction_tools_my_userpoints() {
   $sql  = "SELECT points, time_stamp, event, description, status FROM {userpoints_txn} WHERE uid = %d";
   $sql .= tablesort_sql($header);
   $result = pager_query($sql, 10, 0, NULL, $uid);
-  if (mysql_num_rows($result) > 0) {
+  if (db_num_rows($result) > 0) {
     while ($row = db_fetch_object($result)) {
       if ($row->status == 0) {
         $status = t('Approved');
