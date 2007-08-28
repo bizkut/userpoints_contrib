@@ -1,0 +1,89 @@
+<?php
+
+define('USERPOINTS_SINGLENOTIFY_SUBJECT_DEFAULT', 'Congratulations');
+
+$default_text  = "!username,\n\nCongratulations! \n";
+$default_text .= "You have !points_new new points. \n";
+$default_text .= "Date : !points_date \n";
+$default_text .= "Event : !points_event \n";
+$default_text .= "Description : !points_description \n";
+define('USERPOINTS_SINGLENOTIFY_TEXT_DEFAULT', $default_text);
+
+
+function userpoints_singlenotify_help($section) {
+  switch ($section) {
+    case 'admin/modules#description':
+      $output = t('Email users every time points are added to their account');
+      break;
+  }
+  return $output;
+}
+
+function userpoints_singlenotify_userpoints($op, $new_points = 0, $uid = 0, $event = '') {
+  switch($op) {
+    case 'setting':
+      $group = 'singlenotify';
+      $form[$group] = array(
+        '#type' => 'fieldset',
+        '#title' => t('Email points notification'),
+        '#description' =>  t('Notification of the latest added points.'),
+        '#collapsible' => TRUE,
+        '#collapsed' => TRUE,
+      );
+
+      $form[$group]['userpoints_singlenotify_subject'] = array(
+        '#type' => 'textarea',
+        '#title' => t('Subject of email to sent.'),
+        '#default_value' => variable_get('userpoints_singlenotify_subject', USERPOINTS_SINGLENOTIFY_SUBJECT_DEFAULT),
+        '#width' => 70,
+        '#lines' => 5,
+      );
+
+      $form[$group]['userpoints_singlenotify_text'] = array(
+        '#type' => 'textarea',
+        '#title' => t('Text of email to sent.'),
+        '#default_value' => variable_get('userpoints_singlenotify_text', USERPOINTS_SINGLENOTIFY_TEXT_DEFAULT),
+        '#description' => t('Body of the email to send. !username, !points, !points_new, !points_date, !points_event, !points_description are replaced with values.'),
+        '#width' => 70,
+        '#lines' => 5,
+      );
+
+      return $form;
+      break;
+
+    case 'points after':
+      if ($new_points > 0) {
+        $current_points = userpoints_get_current_points($uid);
+        _userpoints_singlenotify_process($uid, $current_points, $new_points, $event);
+      }
+      break;
+  }
+}
+
+function _userpoints_singlenotify_process($uid = 0, $current_points = 0, $new_points = 0, $event = '') {
+    $user = user_load(array('uid' => $uid));
+    $subject = variable_get('userpoints_singlenotify_subject', USERPOINTS_SINGLENOTIFY_SUBJECT_DEFAULT);
+
+    $from = variable_get('site_mail', ini_get('sendmail_from'));
+        
+    $sql = 'SELECT * FROM {userpoints_txn} WHERE uid=%d ORDER BY time_stamp DESC LIMIT 1';
+    $result = db_query($sql, $uid);
+    $userpoints_txn = db_fetch_array($result);
+
+    $date_points = format_date($userpoints_txn['time_stamp'], 'custom', 'm/d/y');
+    $event_points = $userpoints_txn['event'];
+    $description_points = $userpoints_txn['description'];    
+
+    drupal_mail('userpoints_singlenotify',
+      $user->mail, $subject, t(variable_get('userpoints_singlenotify_text', USERPOINTS_SINGLENOTIFY_TEXT_DEFAULT),
+      array('!username' => $user->name,
+            '!points' => $current_points,
+            '!points_new' => $new_points,
+            '!points_date' => $date_points,
+            '!points_event' => $event_points,
+            '!points_description' => $description_points,
+          )
+      ),
+      $from
+    );
+}
