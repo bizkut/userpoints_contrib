@@ -1,6 +1,0 @@
-; $Id: userpoints_email.info,v 1.1 2007-06-24 00:35:04 kbahey Exp $
-name = Email notify
-description = Userpoints email notification
-dependencies = userpoints
-package = Userpoints
-version = "$Name:  $"

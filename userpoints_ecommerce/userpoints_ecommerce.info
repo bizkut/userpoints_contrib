@@ -1,5 +1,0 @@
-; $Id: userpoints_ecommerce.info,v 1.4 2007-06-29 22:14:38 kbahey Exp $
-name = Userpoints Ecommerce
-description = Interfaces userpoints with ecommerce, so users can get points for purchases, as well as use points as a payment method for checkout.
-package = Userpoints
-dependencies = userpoints cart payment

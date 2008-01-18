@@ -1,6 +1,0 @@
-name = Email single notify
-description = Userpoints email single notification
-dependencies = userpoints
-package = Userpoints
-version = "5.x-0.0"
-

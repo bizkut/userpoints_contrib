@@ -1,6 +1,0 @@
-; $Id: userpoints_expire.info,v 1.1 2007-06-24 00:35:04 kbahey Exp $
-name = Inactive expiry
-description = Inactive users lose a certain number of points every certain period.
-dependencies = userpoints
-package = Userpoints
-version = "$Name:  $"
