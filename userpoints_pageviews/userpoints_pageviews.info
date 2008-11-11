@@ -1,0 +1,4 @@
+name = Userpoints Page Views
+description = Gives points to content creators based on page views
+package = Userpoints
+dependencies = userpoints
