@@ -1,5 +1,5 @@
 <?php
-// $Id: userpoints_badges.module,v 1.2 2009-01-09 09:20:17 jredding Exp $
+// $Id: userpoints_badges.module,v 1.3 2009-01-09 10:39:21 jredding Exp $
 
 function userpoints_badges_menu() {
   $items = array();
@@ -103,7 +103,7 @@ function userpoints_badges_run_mass_badge_check($bid, $userpoints_goal) {
 /**
  * Implementation of hook_userpoints
  */
-function userpoints_badges_userpoints($op, $params) {
+function userpoints_badges_userpoints($op, $params = array()) {
   switch ($op) {
     case 'setting':
       $group = 'userpoints_badges';

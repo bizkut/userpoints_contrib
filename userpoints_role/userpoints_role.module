@@ -1,6 +1,6 @@
 <?php
 
-//$Id: userpoints_role.module,v 1.5 2009-01-09 09:20:18 jredding Exp $
+//$Id: userpoints_role.module,v 1.6 2009-01-09 10:39:22 jredding Exp $
 
 // Copyright 2005-2007 Khalid Baheyeldin http://2bits.com
 
@@ -20,7 +20,7 @@ function userpoints_role_help($path, $arg) {
 /**
  * Role promotion/demotion based on points gained/lost
  */
-function userpoints_role_userpoints($op, $params) {
+function userpoints_role_userpoints($op, $params = array()) {
   switch($op) {
     case 'setting':
       $group = 'role';

@@ -1,5 +1,5 @@
 <?php
-// $Id: user2userpoints.module,v 1.5 2009-01-09 09:20:16 jredding Exp $
+// $Id: user2userpoints.module,v 1.6 2009-01-09 10:39:21 jredding Exp $
 
 /**
  * @file
@@ -220,7 +220,7 @@ function user2userpoints_giveform_submit($form, &$form_state) {
   userpoints_userpointsapi($params);
 }
 
-function user2userpoints_userpoints($op, $params) {
+function user2userpoints_userpoints($op, $params = array()) {
   switch ($op) {
     case 'setting':
       $form['user2user'] = array(

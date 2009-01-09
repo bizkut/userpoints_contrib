@@ -1,5 +1,5 @@
 <?php
-//$Id: userpoints_role_exempt.module,v 1.4 2009-01-09 09:20:18 jredding Exp $
+//$Id: userpoints_role_exempt.module,v 1.5 2009-01-09 10:39:22 jredding Exp $
 
 // Copyright 2005-2008 Khalid Baheyeldin http://2bits.com
 
@@ -13,7 +13,7 @@ function userpoints_role_exempt_help($section) {
   }
 }
 
-function userpoints_role_exempt_userpoints($op, $params) {
+function userpoints_role_exempt_userpoints($op, $params = array()) {
   switch($op) {
     case 'setting':
       $group = 'role_exempt';
