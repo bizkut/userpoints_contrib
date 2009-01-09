@@ -1,9 +1,9 @@
 <?php
-// $Id: userpoints_pageviews.module,v 1.1 2008-11-11 03:57:17 kbahey Exp $
+// $Id: userpoints_pageviews.module,v 1.2 2009-01-09 09:20:17 jredding Exp $
 
 define('USERPOINTS_PAGE_VIEWS', 'userpoints_pageviews');
 
-function userpoints_pageviews_userpoints($op, $points, $uid, $event) {
+function userpoints_pageviews_userpoints($op, $params) {
   if ($op == 'setting') {
     $group = 'invite';
     $form[$group] = array(

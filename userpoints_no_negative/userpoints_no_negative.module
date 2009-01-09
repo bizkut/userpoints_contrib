@@ -1,5 +1,5 @@
 <?
-//  $Id: userpoints_no_negative.module,v 1.1 2008-01-19 12:45:55 greggles Exp $ 
+//  $Id: userpoints_no_negative.module,v 1.2 2009-01-09 09:20:17 jredding Exp $ 
 
 /**
  * @file
@@ -9,7 +9,9 @@
 /**
  * Implementation of hook_userpoints
  */
-function userpoints_no_negative_userpoints($op, $points = 0, $uid = 0, $event = '') {
+function userpoints_no_negative_userpoints($op, $params) {
+	$uid = $params['uid'];
+	$points = $params['points'];
   if ($op == 'points before') {
     if ($points < 0) {
       $current_points = userpoints_get_current_points($uid);
