@@ -1,0 +1,6 @@
+; $Id: userpoints_modr8.info,v 1.2 2009-06-23 23:24:09 kbahey Exp $
+name = Userpoints Modr8
+description = Moderators get awarded points for moderating via the modr8 module
+package = Userpoints
+core = 6.x
+dependencies[] = userpoints
